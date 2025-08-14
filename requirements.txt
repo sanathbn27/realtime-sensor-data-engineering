@@ -1,0 +1,9 @@
+pandas
+watchdog
+SQLAlchemy
+psycopg2-binary
+python-dotenv
+pydantic
+tenacity
+pyyaml
+loguru
