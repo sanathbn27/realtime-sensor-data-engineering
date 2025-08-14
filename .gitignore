@@ -1,0 +1,21 @@
+# python
+__pycache__/
+*.pyc
+
+# venv
+.venv/
+
+# data & logs
+data/
+archive/
+quarantine/
+logs/
+
+# OS
+.DS_Store
+Thumbs.db
+
+#data
+/data/
+/data_corrupted/
+/raw_dataset/
