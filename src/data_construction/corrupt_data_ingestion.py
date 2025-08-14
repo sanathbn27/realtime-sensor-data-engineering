@@ -21,10 +21,11 @@ for file in os.listdir(input_dir):
         # Inject missing device IDs
         missing_idx = df.sample(frac=MISSING_DEVICE_PROB).index
         df.loc[missing_idx, 'device'] = None
+        
 
         # Inject type errors into numeric columns
-        numeric_cols = ['co', 'humidity', 'light', 'lpg', 'smoke', 'temp']
-        for col in numeric_cols:
+        numeric_columns = ['co', 'humidity', 'light', 'lpg', 'smoke', 'temp']
+        for col in numeric_columns:
             type_err_idx = df.sample(frac=TYPE_ERROR_PROB).index
             df[col] = df[col].astype(object)
             df.loc[type_err_idx, col] = "N/A"

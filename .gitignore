@@ -19,3 +19,8 @@ Thumbs.db
 /data/
 /data_corrupted/
 /raw_dataset/
+/archive/
+/logs/
+# quarantine
+/quarantine/
+/incoming/
