@@ -5,8 +5,8 @@ import numpy as np
 from loguru import logger
 
 BASE_DIR = Path(__file__).resolve().parent.parent.parent
-TRANSFORMED_DIR = BASE_DIR / "transformed"
-AGGREGATES_DIR = BASE_DIR / "aggregates"
+TRANSFORMED_DIR = BASE_DIR / "transformed_data"
+AGGREGATES_DIR = BASE_DIR / "aggregated_data"
 AGGREGATES_DIR.mkdir(exist_ok=True)
 
 def aggregate_file(file_path):

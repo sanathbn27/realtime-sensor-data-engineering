@@ -3,7 +3,7 @@ from pathlib import Path
 
 BASE_DIR = Path(__file__).resolve().parent.parent.parent
 ARCHIVE_DIR = BASE_DIR / "archive"
-TRANSFORMED_DIR = BASE_DIR / "transformed"
+TRANSFORMED_DIR = BASE_DIR / "transformed_data"
 TRANSFORMED_DIR.mkdir(exist_ok=True)
 
 def transform_file(file_path):
@@ -45,7 +45,7 @@ def transform_file(file_path):
 
     # 5. Save transformed file
     transformed_path = TRANSFORMED_DIR / Path(file_path).name
-    df.to_csv(transformed_path, index=False)
+    df.to_csv(transformed_path, index=False, date_format="%Y-%m-%d %H:%M:%S.%f")
     return transformed_path
 
 if __name__ == "__main__":

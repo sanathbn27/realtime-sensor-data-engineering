@@ -6,6 +6,7 @@ from watchdog.events import FileSystemEventHandler
 from loguru import logger
 from validation import validate_file
 from transformation import transform_file 
+from aggregation import aggregate_file
 
 BASE_DIR = Path(__file__).resolve().parent.parent.parent
 
@@ -61,6 +62,22 @@ class IncomingHandler(FileSystemEventHandler):
                     logger.info(f"File transformed and saved to {transformed_path}")
                 else:
                     logger.warning(f"Archive file not found for transformation: {archive_path}")
+
+                transformed_path = BASE_DIR / "transformed_data" / Path(event.src_path).name
+
+                logger.debug(f"Looking for transformed file: {transformed_path}")
+                max_wait_time_seconds = 5
+                wait_start = time.time()
+                while not transformed_path.exists() and (time.time() - wait_start) < max_wait_time_seconds:
+                    logger.info(f"Waiting for transformed file to appear: {transformed_path}")
+                    time.sleep(0.5)
+
+                if transformed_path.exists():
+                    # Step 3: Aggregation
+                    output_file = aggregate_file(transformed_path)
+                    logger.info(f"Aggregated metrics saved to {output_file}")
+                else:   
+                    logger.warning(f"Transformed file not found for aggregation: {transformed_path}")
                 
             except PermissionError as e:
                 logger.error(f"Permission error while reading {event.src_path}: {e}")
