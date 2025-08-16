@@ -37,6 +37,21 @@ def validate_file(file_path):
         if pd.isnull(row["ts"]):
             log_error(file_name, idx, "ts", None, "Null timestamp")
             row_valid = False
+        if pd.isnull(row["temp"]):
+            log_error(file_name, idx, "temp", None, "Null temperature")
+            row_valid = False
+        if pd.isnull(row["humidity"]):
+            log_error(file_name, idx, "humidity", None, "Null humidity")
+            row_valid = False
+        if pd.isnull(row["light"]):
+            log_error(file_name, idx, "light", None, "Null light status")
+            row_valid = False   
+        if pd.isnull(row["motion"]):
+            log_error(file_name, idx, "motion", None, "Null motion status")
+            row_valid = False
+        if pd.isnull(row["co"]):
+            log_error(file_name, idx, "co", None, "Null CO level")
+            row_valid = False
 
         # Type + range checks
         # Temperature

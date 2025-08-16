@@ -24,3 +24,5 @@ Thumbs.db
 # quarantine
 /quarantine/
 /incoming/
+/aggregates/
+/transformed_data/
