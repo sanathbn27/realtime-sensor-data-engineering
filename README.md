@@ -45,6 +45,29 @@ The pipeline uses `loguru` for real-time logging. It records:
 
 A rotating log file (`logs/pipeline.log`) is maintained to prevent the log from growing indefinitely.
 
+## Data Transformation
+
+Once validated, the data is transformed into a clean, standardized format before being stored. The `transformation.py` module handles this process by:
+
+* **Standardizing Timestamps:** The raw UNIX timestamp (`ts`) is converted into a readable datetime format (e.g., `YYYY-MM-DD HH:MM:SS.ffffff`). This is crucial for accurate time-series analysis.
+
+* **Rounding Numeric Values:** Sensor readings for `humidity`, `temp`, `co`, `lpg`, and `smoke` are rounded to a specific number of decimal places to ensure consistent precision across the dataset.
+
+* **Standardizing Boolean Values:** The `light` and `motion` columns are converted to a consistent boolean format (`True`/`False`).
+
+## Analytical Processing and Aggregation
+
+After transformation, the pipeline calculates aggregation metrics to provide immediate insights and prepare the data for downstream analysis. The `aggregation.py` module computes key metrics, such as:
+
+* **Average `temp` and `humidity`** per device over a specific time window.
+
+* **Maximum `co` and `smoke`** levels per device to identify potential alarms.
+
+* **Count of `motion` and `light`** events to track activity.
+
+These aggregated metrics are then stored in the database alongside the raw sensor data, providing a dual-layered approach to analysis.
+
+
 ---
 
 ## Running the Real-Time Pipeline
@@ -62,6 +85,9 @@ A rotating log file (`logs/pipeline.log`) is maintained to prevent the log from 
 The pipeline will now automatically:
 * Validate the incoming files.
 * Log any errors encountered.
-* Archive all valid rows.
 * Quarantine all invalid rows for later analysis.
+* Archive all valid rows.
+* Transform the data into standard form
+* Aggregate the data for analysis.
+
 
