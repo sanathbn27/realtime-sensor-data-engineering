@@ -53,19 +53,27 @@ def aggregate_file(file_path):
     cols = ['file_name', 'processed_at', 'device_id'] + [col for col in agg_df.columns if col not in ['file_name', 'processed_at', 'device_id']]
     agg_df = agg_df[cols]
 
-    # Save to CSV (append if exists)
-    output_file = AGGREGATES_DIR / "aggregates_by_device.csv"
+    # # Save to CSV (append if exists)
+    # output_file = AGGREGATES_DIR / "aggregates_by_device.csv"
     
-    # Append to the existing file or create a new one
-    if output_file.exists():
-        # Check if the header matches before appending
-        existing_df = pd.read_csv(output_file, nrows=0)
-        if list(existing_df.columns) == list(agg_df.columns):
-            agg_df.to_csv(output_file, mode="a", header=False, index=False)
-        else:
-            logger.error("Header mismatch in existing aggregates file. Skipping append.")
-    else:
-        agg_df.to_csv(output_file, index=False)
+    # # Append to the existing file or create a new one
+    # if output_file.exists():
+    #     # Check if the header matches before appending
+    #     existing_df = pd.read_csv(output_file, nrows=0)
+    #     if list(existing_df.columns) == list(agg_df.columns):
+    #         agg_df.to_csv(output_file, mode="a", header=False, index=False)
+    #     else:
+    #         logger.error("Header mismatch in existing aggregates file. Skipping append.")
+    # else:
+    #     agg_df.to_csv(output_file, index=False)
+
+     # The key change: Create a unique output file name
+    timestamp = datetime.now().strftime("%Y-%m-%d_%H-%M")
+    output_file_name = f"aggregates_{file_path.stem}_{timestamp}.csv"
+    output_file = AGGREGATES_DIR / output_file_name
+        
+        # Save to a new CSV file
+    agg_df.to_csv(output_file, index=False)
     
     return output_file
 

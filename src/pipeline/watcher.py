@@ -4,6 +4,7 @@ from pathlib import Path
 from watchdog.observers import Observer
 from watchdog.events import FileSystemEventHandler
 from loguru import logger
+import threading
 from validation import validate_file
 from transformation import transform_file 
 from aggregation import aggregate_file
@@ -18,16 +19,33 @@ os.makedirs(LOGS_DIR, exist_ok=True)
 
 logger.add(LOGS_DIR /"pipeline.log", rotation="1 MB")
 
+PROCESSED_FILES = set()
+file_lock = threading.Lock()
+
 class IncomingHandler(FileSystemEventHandler):
     def on_created(self, event):
         self.process(event)
 
-    def on_modified(self, event):
-        self.process(event)
+    # def on_modified(self, event):
+    #     self.process(event)
 
     def process(self, event):
+        # A unique identifier for the file to prevent re-processing.
+        file_id = os.path.basename(event.src_path)
+
+        # Check if the file has already been processed in this session.
+         # Use the lock to ensure only one thread checks the set at a time
+        with file_lock:
+            if file_id in PROCESSED_FILES:
+                logger.info(f"Skipping already processed file: {event.src_path}")
+                return
+            
+            # Add the file to the processed set immediately
+            PROCESSED_FILES.add(file_id)
+        
         if not event.is_directory and event.src_path.endswith(".csv"):
             time.sleep(0.5)  # Allow time for file to be fully written
+            
             try:
                 logger.info(f"New or modified file detected: {event.src_path}")
 
@@ -76,6 +94,7 @@ class IncomingHandler(FileSystemEventHandler):
                     # Step 3: Aggregation
                     output_file = aggregate_file(transformed_path)
                     logger.info(f"Aggregated metrics saved to {output_file}")
+                    
                 else:   
                     logger.warning(f"Transformed file not found for aggregation: {transformed_path}")
                 
