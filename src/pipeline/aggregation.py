@@ -21,8 +21,6 @@ def aggregate_file(file_path):
     """
     df = pd.read_csv(file_path)
 
-    # Assuming the device ID column is the second one, as per the image
-    # Note: It's better to use a specific column name if available
     device_col = df.columns[1]
     
     # Define the numeric columns for aggregation
@@ -37,7 +35,7 @@ def aggregate_file(file_path):
         'min', 'max', 'mean', 'std'
     ])
     
-    # Flatten the multi-level column names for easier saving
+    # Flatten the multi-level column names to save
     agg_df.columns = ['_'.join(col).strip() for col in agg_df.columns.values]
 
     #round off numeric columns to 4 decimal places
@@ -46,7 +44,7 @@ def aggregate_file(file_path):
     # Add metadata columns
     agg_df.reset_index(inplace=True)
     agg_df.rename(columns={device_col: 'device_id'}, inplace=True)
-    output_file_name = f"{file_path.stem}_aggregated.csv"
+    output_file_name = file_path.name
     output_file = AGGREGATES_DIR / output_file_name
     agg_df['file_name'] = output_file.name
     agg_df['processed_at'] = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
@@ -55,25 +53,6 @@ def aggregate_file(file_path):
     cols = ['file_name', 'processed_at', 'device_id'] + [col for col in agg_df.columns if col not in ['file_name', 'processed_at', 'device_id']]
     agg_df = agg_df[cols]
 
-    # # Save to CSV (append if exists)
-    # output_file = AGGREGATES_DIR / "aggregates_by_device.csv"
-    
-    # # Append to the existing file or create a new one
-    # if output_file.exists():
-    #     # Check if the header matches before appending
-    #     existing_df = pd.read_csv(output_file, nrows=0)
-    #     if list(existing_df.columns) == list(agg_df.columns):
-    #         agg_df.to_csv(output_file, mode="a", header=False, index=False)
-    #     else:
-    #         logger.error("Header mismatch in existing aggregates file. Skipping append.")
-    # else:
-    #     agg_df.to_csv(output_file, index=False)
-
-     # The key change: Create a unique output file name
-    # timestamp = datetime.now().strftime("%Y-%m-%d_%H-%M")
-    # output_file_name = f"{file_path.stem}_aggregated.csv"
-    # output_file = AGGREGATES_DIR / output_file_name
-        
     # Save to a new CSV file
     agg_df.to_csv(output_file, index=False)
     

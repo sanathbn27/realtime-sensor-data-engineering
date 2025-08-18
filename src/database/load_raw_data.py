@@ -3,7 +3,7 @@
 import pandas as pd
 from pathlib import Path
 from psycopg2.extras import execute_values
-from src.database.db_utils import get_connection  # reuse your helper
+from src.database.db_utils import get_connection, safe_execute_values
 
 # project root = two levels up from this file (src/database/)
 BASE_DIR = Path(__file__).resolve().parents[2]
@@ -86,7 +86,7 @@ def load_raw_file(file_path: Path):
 
     with get_connection() as conn:
         with conn.cursor() as cur:
-            execute_values(cur, insert_sql, rows, template=tpl)
+            safe_execute_values(cur, insert_sql, rows, template=tpl)
         conn.commit()
 
     print(f"[SUCCESS] Inserted {len(rows)} rows from {file_path}. Skipped (no/invalid ts): {skipped_no_ts}")

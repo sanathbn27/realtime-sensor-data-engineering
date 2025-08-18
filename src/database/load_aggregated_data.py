@@ -1,11 +1,9 @@
 import pandas as pd
 from pathlib import Path
 from psycopg2.extras import execute_values
-from src.database.db_utils import get_connection
+from src.database.db_utils import get_connection, safe_execute_values
 
-# A more robust way to define the aggregated data directory
-# This assumes the 'aggregated_data' folder is a sibling of the 'src' folder
-# which is a common project structure.
+
 AGG_DIR = Path(__file__).resolve().parent.parent.parent / "aggregated_data"
 
 def load_aggregated_file(csv_path: Path):
@@ -13,9 +11,7 @@ def load_aggregated_file(csv_path: Path):
     try:
         df = pd.read_csv(csv_path)
 
-        # Correcting the first two column names to match the database schema
-        # The CSV columns are `file_name`, `processed_at` but the database
-        # columns are `file_name` and `processed_at`. This renames them.
+        
         df = df.rename(columns={df.columns[0]: "file_name", df.columns[1]: "processed_at"})
 
         # Ensure processed_at is a proper datetime object
@@ -42,7 +38,7 @@ def load_aggregated_file(csv_path: Path):
         """
         
         # Use execute_values for efficient bulk insertion
-        execute_values(cur, sql, rows)
+        safe_execute_values(cur, sql, rows) 
 
         conn.commit()
         print(f"[SUCCESS] Inserted {len(rows)} aggregate rows from {csv_path}")

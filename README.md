@@ -39,66 +39,74 @@ We will create a new schema and two tables to store our data: one for the raw se
 1. **Create Schema**
 First, connect to your new database and create a schema named raw and analytics. This helps organize and isolate our project's data.
 ```sql
-CREATE SCHEMA raw;
-CREATE SCHEMA analytics;
+CREATE SCHEMA IF NOT EXISTS raw;
+CREATE SCHEMA IF NOT EXISTS analytics;
 ```
 
 
 2. **Create Tables**
 Next, create the two tables within the raw and analytics schema.
 
-raw.raw_sensor_data Table
+* **raw.raw_sensor_data** Table.
 This table stores the raw sensor data coming to the incoming folder.
 
 ```sql
-CREATE TABLE analytics.raw_sensor_data (
-    id SERIAL PRIMARY KEY,
-    file_name VARCHAR(255) NOT NULL,
-    device_id VARCHAR(255) NOT NULL,
-    ts TIMESTAMP NOT NULL,
-    co_ppm NUMERIC,
-    humidity_percent NUMERIC,
-    lpg_ppm NUMERIC,
-    smoke_ppm NUMERIC,
-    temp_celsius NUMERIC,
-    light BOOLEAN,
-    motion BOOLEAN,
-    processed_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+CREATE TABLE IF NOT EXISTS raw.raw_sensor_data (
+    id          SERIAL PRIMARY KEY,
+    ts          TIMESTAMP NOT NULL,
+    device_id   VARCHAR(50) NOT NULL,
+    co          NUMERIC(10,4),
+    humidity    NUMERIC(5,2),
+    light       BOOLEAN,
+    lpg         NUMERIC(10,4),
+    motion      BOOLEAN,
+    smoke       NUMERIC(10,4),
+    temp        NUMERIC(5,2),
+    file_name   VARCHAR(255),
+    inserted_at TIMESTAMP DEFAULT NOW()
 );
 ```
 
-analytics.aggregated_sensor_data Table
+* **analytics.aggregated_sensor_data** Table.
 This table stores the aggregated metrics, linked to the original file.
 ```sql
-CREATE TABLE analytics.aggregated_sensor_data (
-    id SERIAL PRIMARY KEY,
-    file_name VARCHAR(255) NOT NULL,
-    processed_at TIMESTAMP NOT NULL,
-    device_id VARCHAR(255) NOT NULL,
-    co_min NUMERIC,
-    co_max NUMERIC,
-    co_mean NUMERIC,
-    co_std NUMERIC,
-    humidity_min NUMERIC,
-    humidity_max NUMERIC,
-    humidity_mean NUMERIC,
-    humidity_std NUMERIC,
-    lpg_min NUMERIC,
-    lpg_max NUMERIC,
-    lpg_mean NUMERIC,
-    lpg_std NUMERIC,
-    smoke_min NUMERIC,
-    smoke_max NUMERIC,
-    smoke_mean NUMERIC,
-    smoke_std NUMERIC,
-    temp_min NUMERIC,
-    temp_max NUMERIC,
-    temp_mean NUMERIC,
-    temp_std NUMERIC,
-    inserted_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+CREATE TABLE IF NOT EXISTS analytics.aggregated_sensor_data (
+    id              SERIAL PRIMARY KEY,
+    file_name       VARCHAR(255),
+    processed_at    TIMESTAMP NOT NULL,
+    device_id       VARCHAR(50) NOT NULL,
+    temp_min        NUMERIC(5,2),
+    temp_max        NUMERIC(5,2),
+    temp_mean       NUMERIC(5,2),
+    temp_std        NUMERIC(5,2),
+    humidity_min    NUMERIC(5,2),
+    humidity_max    NUMERIC(5,2),
+    humidity_mean   NUMERIC(5,2),
+    humidity_std    NUMERIC(5,2),
+    co_min          NUMERIC(10,4),
+    co_max          NUMERIC(10,4),
+    co_mean         NUMERIC(10,4),
+    co_std          NUMERIC(10,4),
+    lpg_min         NUMERIC(10,4),
+    lpg_max         NUMERIC(10,4),
+    lpg_mean        NUMERIC(10,4),
+    lpg_std         NUMERIC(10,4),
+    smoke_min       NUMERIC(10,4),
+    smoke_max       NUMERIC(10,4),
+    smoke_mean      NUMERIC(10,4),
+    smoke_std       NUMERIC(10,4),
+    inserted_at     TIMESTAMP DEFAULT NOW()
 );
 ```
 
+* Creating helpful indexes for both the tables
+```sql
+CREATE INDEX IF NOT EXISTS idx_raw_device_ts ON raw.raw_sensor_data(device_id, ts);
+CREATE INDEX IF NOT EXISTS idx_raw_file_name  ON raw.raw_sensor_data(file_name);
+CREATE INDEX IF NOT EXISTS idx_raw_device ON raw.raw_sensor_data(device_id);
+CREATE INDEX IF NOT EXISTS idx_agg_device_name ON analytics.aggregated_sensor_data(device_id, file_name);
+CREATE INDEX IF NOT EXISTS idx_agg_processed_at ON analytics.aggregated_sensor_data(processed_at);
+```
 
 
 ## Real-Time Monitoring & Validation

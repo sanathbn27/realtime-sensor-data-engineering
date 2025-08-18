@@ -6,6 +6,7 @@ from watchdog.observers import Observer
 from watchdog.events import FileSystemEventHandler
 from loguru import logger
 import threading
+import shutil
 
 from src.pipeline.validation import validate_file
 from src.pipeline.transformation import transform_file 
@@ -109,12 +110,15 @@ class IncomingHandler(FileSystemEventHandler):
                     load_raw_file(Path(event.src_path))  # raw data from INCOMING
                 except Exception as e:
                     logger.error(f"Failed to insert RAW data: {e}")
+                    shutil.move(event.src_path, BASE_DIR / "failed" / Path(event.src_path).name)
+                    return
 
                 try:
                     logger.info(f"Inserting AGGREGATED data into DB from {aggregated_file}")
                     load_aggregated_file(Path(aggregated_file))
                 except Exception as e:
                     logger.error(f"Failed to insert AGGREGATED data: {e}")
+                    shutil.move(aggregated_file, BASE_DIR / "failed" / Path(aggregated_file).name)
 
                 
             except PermissionError as e:
