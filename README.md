@@ -20,6 +20,87 @@ To simulate the incoming sensor data, we will use a pre-existing dataset and pro
 
 ---
 
+## PostgreSQL Database Setup
+
+The pipeline uses PostgreSQL to store and manage the processed sensor data. You must have a running PostgreSQL instance to use this pipeline.
+
+### Installation & Configuration
+
+1. **Install PostgreSQL:** Download and install PostgreSQL on your machine from the official website.
+2. **Create Database:** Use psql or preferred tool (e.g., PgAdmin) to create a new database for this project.
+```sql
+CREATE DATABASE sensor_db;
+```
+3. **Database Connection:** Ensure you have configured your database connection details (host, database name, user, password) in db_utils.py to allow the pipeline to connect.
+
+### Database Schema 
+We will create a new schema and two tables to store our data: one for the raw sensor data and another for the aggregated metrics.
+
+1. **Create Schema**
+First, connect to your new database and create a schema named raw and analytics. This helps organize and isolate our project's data.
+```sql
+CREATE SCHEMA raw;
+CREATE SCHEMA analytics;
+```
+
+
+2. **Create Tables**
+Next, create the two tables within the raw and analytics schema.
+
+raw.raw_sensor_data Table
+This table stores the raw sensor data coming to the incoming folder.
+
+```sql
+CREATE TABLE analytics.raw_sensor_data (
+    id SERIAL PRIMARY KEY,
+    file_name VARCHAR(255) NOT NULL,
+    device_id VARCHAR(255) NOT NULL,
+    ts TIMESTAMP NOT NULL,
+    co_ppm NUMERIC,
+    humidity_percent NUMERIC,
+    lpg_ppm NUMERIC,
+    smoke_ppm NUMERIC,
+    temp_celsius NUMERIC,
+    light BOOLEAN,
+    motion BOOLEAN,
+    processed_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+```
+
+analytics.aggregated_sensor_data Table
+This table stores the aggregated metrics, linked to the original file.
+```sql
+CREATE TABLE analytics.aggregated_sensor_data (
+    id SERIAL PRIMARY KEY,
+    file_name VARCHAR(255) NOT NULL,
+    processed_at TIMESTAMP NOT NULL,
+    device_id VARCHAR(255) NOT NULL,
+    co_min NUMERIC,
+    co_max NUMERIC,
+    co_mean NUMERIC,
+    co_std NUMERIC,
+    humidity_min NUMERIC,
+    humidity_max NUMERIC,
+    humidity_mean NUMERIC,
+    humidity_std NUMERIC,
+    lpg_min NUMERIC,
+    lpg_max NUMERIC,
+    lpg_mean NUMERIC,
+    lpg_std NUMERIC,
+    smoke_min NUMERIC,
+    smoke_max NUMERIC,
+    smoke_mean NUMERIC,
+    smoke_std NUMERIC,
+    temp_min NUMERIC,
+    temp_max NUMERIC,
+    temp_mean NUMERIC,
+    temp_std NUMERIC,
+    inserted_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+```
+
+
+
 ## Real-Time Monitoring & Validation
 
 The core of this pipeline is a real-time monitoring system built using `watchdog`. It automatically detects and processes new files as soon as they are placed in the `incoming/` folder.
@@ -70,6 +151,13 @@ These aggregated metrics are then stored in the database alongside the raw senso
 
 ---
 
+## Data Loading
+Once the new file has been found in the incoming folder and aggregated_data, the pipeline loads it directly into the PostgreSQL database.
+
+* **Loading Raw Data:** The raw sensor data is loaded into the raw.raw_sensor_data table.
+
+* **Loading Aggregated Data:** The newly created aggregated file is loaded into the analytics.aggregated_sensor_data table. This step is designed to efficiently handle new files as they are created.
+
 ## Running the Real-Time Pipeline
 
 1.  **Activate Environment:** Ensure you have activated your development environment, such as a Conda environment.
@@ -89,5 +177,6 @@ The pipeline will now automatically:
 * Archive all valid rows.
 * Transform the data into standard form
 * Aggregate the data for analysis.
+* Load both raw and aggregated data into the PostgreSQL database.
 
 

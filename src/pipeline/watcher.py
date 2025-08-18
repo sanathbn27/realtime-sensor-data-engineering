@@ -1,16 +1,21 @@
 import time
 import os
+import sys
 from pathlib import Path
 from watchdog.observers import Observer
 from watchdog.events import FileSystemEventHandler
 from loguru import logger
 import threading
-from validation import validate_file
-from transformation import transform_file 
-from aggregation import aggregate_file
+
+from src.pipeline.validation import validate_file
+from src.pipeline.transformation import transform_file 
+from src.pipeline.aggregation import aggregate_file
+
+from ..database.load_raw_data import load_raw_file
+from ..database.load_aggregated_data import load_aggregated_file
 
 BASE_DIR = Path(__file__).resolve().parent.parent.parent
-
+sys.path.append(str(BASE_DIR))
 INCOMING_DIR = BASE_DIR /"incoming"
 LOGS_DIR = BASE_DIR / "logs"
 
@@ -58,7 +63,7 @@ class IncomingHandler(FileSystemEventHandler):
                 else:
                     logger.warning(f"Some rows in {event.src_path} failed validation")
 
-                    # Step 2: Transformation
+                # Step 2: Transformation
                 archive_path = BASE_DIR / "archive" / Path(event.src_path).name
 
                     # # Wait up to 3 seconds for the archive file to appear
@@ -68,7 +73,6 @@ class IncomingHandler(FileSystemEventHandler):
                     #     time.sleep(0.5)
                 logger.debug(f"Looking for archive file: {archive_path}")
 
-                    # Step 2: Transformation
                 max_wait_time_seconds = 5
                 wait_start = time.time()
                 while not archive_path.exists() and (time.time() - wait_start) < max_wait_time_seconds:
@@ -81,6 +85,8 @@ class IncomingHandler(FileSystemEventHandler):
                 else:
                     logger.warning(f"Archive file not found for transformation: {archive_path}")
 
+                # Step 3: Aggregation
+
                 transformed_path = BASE_DIR / "transformed_data" / Path(event.src_path).name
 
                 logger.debug(f"Looking for transformed file: {transformed_path}")
@@ -91,12 +97,25 @@ class IncomingHandler(FileSystemEventHandler):
                     time.sleep(0.5)
 
                 if transformed_path.exists():
-                    # Step 3: Aggregation
-                    output_file = aggregate_file(transformed_path)
-                    logger.info(f"Aggregated metrics saved to {output_file}")
+                    aggregated_file = aggregate_file(transformed_path)
+                    logger.info(f"Aggregated metrics saved to {aggregated_file}")
                     
                 else:   
                     logger.warning(f"Transformed file not found for aggregation: {transformed_path}")
+
+                # Step 4: Load raw data and aggregated data into the database
+                try:
+                    logger.info(f"Inserting RAW data into DB from {event.src_path}")
+                    load_raw_file(Path(event.src_path))  # raw data from INCOMING
+                except Exception as e:
+                    logger.error(f"Failed to insert RAW data: {e}")
+
+                try:
+                    logger.info(f"Inserting AGGREGATED data into DB from {aggregated_file}")
+                    load_aggregated_file(Path(aggregated_file))
+                except Exception as e:
+                    logger.error(f"Failed to insert AGGREGATED data: {e}")
+
                 
             except PermissionError as e:
                 logger.error(f"Permission error while reading {event.src_path}: {e}")

@@ -46,7 +46,9 @@ def aggregate_file(file_path):
     # Add metadata columns
     agg_df.reset_index(inplace=True)
     agg_df.rename(columns={device_col: 'device_id'}, inplace=True)
-    agg_df['file_name'] = Path(file_path).name
+    output_file_name = f"{file_path.stem}_aggregated.csv"
+    output_file = AGGREGATES_DIR / output_file_name
+    agg_df['file_name'] = output_file.name
     agg_df['processed_at'] = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
     
     # Rearrange columns to put metadata at the front
@@ -68,11 +70,11 @@ def aggregate_file(file_path):
     #     agg_df.to_csv(output_file, index=False)
 
      # The key change: Create a unique output file name
-    timestamp = datetime.now().strftime("%Y-%m-%d_%H-%M")
-    output_file_name = f"aggregates_{file_path.stem}_{timestamp}.csv"
-    output_file = AGGREGATES_DIR / output_file_name
+    # timestamp = datetime.now().strftime("%Y-%m-%d_%H-%M")
+    # output_file_name = f"{file_path.stem}_aggregated.csv"
+    # output_file = AGGREGATES_DIR / output_file_name
         
-        # Save to a new CSV file
+    # Save to a new CSV file
     agg_df.to_csv(output_file, index=False)
     
     return output_file

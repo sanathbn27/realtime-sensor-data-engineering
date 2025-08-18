@@ -8,7 +8,7 @@ from src.database.db_utils import get_connection
 # which is a common project structure.
 AGG_DIR = Path(__file__).resolve().parent.parent.parent / "aggregated_data"
 
-def load_aggregate_file(csv_path: Path):
+def load_aggregated_file(csv_path: Path):
     """Loads a single aggregated data CSV file into the database."""
     try:
         df = pd.read_csv(csv_path)
@@ -54,13 +54,13 @@ def load_aggregate_file(csv_path: Path):
         cur.close()
         conn.close()
 
-# if __name__ == "__main__":
-#     if not AGG_DIR.is_dir():
-#         print(f"[WARNING] Directory not found: {AGG_DIR}. Please check the path.")
+if __name__ == "__main__":
+    if not AGG_DIR.is_dir():
+        print(f"[WARNING] Directory not found: {AGG_DIR}. Please check the path.")
     
-#     csv_files = list(AGG_DIR.glob("*.csv"))
-#     if not csv_files:
-#         print(f"[WARNING] No CSV files found in directory: {AGG_DIR}")
+    csv_files = list(AGG_DIR.glob("*.csv"))
+    if not csv_files:
+        print(f"[WARNING] No CSV files found in directory: {AGG_DIR}")
 
-#     for csv_file in csv_files:
-#         load_aggregate_file(csv_file)
+    for csv_file in csv_files:
+        load_aggregated_file(csv_file)

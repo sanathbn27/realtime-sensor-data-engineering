@@ -43,13 +43,13 @@ def load_raw_file(file_path: Path):
     df["light"] = df["light"].apply(_to_bool)
     df["motion"] = df["motion"].apply(_to_bool)
 
-    # Prepare rows; convert epoch to plain Python int for TO_TIMESTAMP(%s)
+    # Prepare rows;to convert epoch to plain Python int for TO_TIMESTAMP(%s)
     rows = []
     skipped_no_ts = 0
     for _, r in df.iterrows():
         ts_val = r["ts_epoch"]
         if pd.isna(ts_val):
-            # If your table has ts NOT NULL, we must skip rows with missing/invalid ts
+            
             skipped_no_ts += 1
             continue
         try:
