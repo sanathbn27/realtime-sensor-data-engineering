@@ -1,7 +1,7 @@
 # Real-Time Sensor Pipeline
 
 Goal: Monitor `data/` for incoming CSVs every 5–10s, validate + quarantine bad rows, 
-transform + aggregate and store raw + aggregates to PostgreSQL. Later provide MySQL schema.
+transform + aggregate and store raw + aggregates to PostgreSQL.
 
 
 ## Dataset Setup
